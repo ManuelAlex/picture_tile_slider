@@ -22,49 +22,44 @@ class GameBoard extends StatefulWidget {
   final GameEngine gameEngine;
   final GameItems gameItems;
   final bool isRandomized;
-  final double tileHeight,tileWidth;
-   final int index;
+  final double tileHeight, tileWidth;
+  final int index;
 
   @override
   State<GameBoard> createState() => _GameBoardState();
 }
 
 class _GameBoardState extends State<GameBoard> {
-
-  late bool _isRandomized ;
+  late bool _isRandomized;
   List<dynamic> tileItems = [];
   bool isAnimating = false;
- @override
+  @override
   void initState() {
     _isRandomized = widget.isRandomized;
-     tileItems = List.from(widget.items.items);
+    tileItems = List.from(widget.items.items);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    
-  
+    return Stack(
+      children: widget.items.items.asMap().entries.map((entry) {
+        final int index = entry.key;
+        final dynamic currentItem = entry.value;
+        final bool isDragged = widget.items.dragItemIndex == index;
+        final Offset offset = _getTileOffset(tileItems.indexOf(currentItem));
 
- return Stack(
-  children: widget.items.items.asMap().entries.map((entry) {
-    final int index = entry.key;
-    final dynamic currentItem = entry.value;
-    final bool isDragged = widget.items.dragItemIndex == index;
-    final Offset offset = _getTileOffset(tileItems.indexOf(currentItem));
-
-    return AnimatedPositioned(
-      duration: const Duration(milliseconds: 300),
-      top: offset.dy,
-      left: offset.dx,
-      child: GestureDetector(
-        onTap: () => _handleTileTap(index),
-        child: _buildTileContent(index, currentItem, isDragged),
-      ),
+        return AnimatedPositioned(
+          duration: const Duration(milliseconds: 300),
+          top: offset.dy,
+          left: offset.dx,
+          child: GestureDetector(
+            onTap: () => _handleTileTap(index),
+            child: _buildTileContent(index, currentItem, isDragged),
+          ),
+        );
+      }).toList(),
     );
-  }).toList(),
-);
-
   }
 
   Offset _getTileOffset(int index) {
@@ -74,20 +69,19 @@ class _GameBoardState extends State<GameBoard> {
   }
 
   void _handleTileTap(int index) {
-   if (isAnimating) return; // Prevent multiple animations
-        setState(() {
-          isAnimating = true; // Set animation flag to true
-        });
+    if (isAnimating) return; // Prevent multiple animations
+    setState(() {
+      isAnimating = true; // Set animation flag to true
+    });
 
-        widget.items.swapItem(!widget.gameEngine.isPaused, index);
+    widget.items.swapItem(!widget.gameEngine.isPaused, index);
 
-        // Trigger the state update after animation completes
-        Future.delayed(const Duration(milliseconds: 90), () {
-          setState(() {
-            tileItems = List.from(widget.items.items);
-            isAnimating = false; 
-          });
-       
+    // Trigger the state update after animation completes
+    Future.delayed(const Duration(milliseconds: 90), () {
+      setState(() {
+        tileItems = List.from(widget.items.items);
+        isAnimating = false;
+      });
     });
   }
 
@@ -95,20 +89,19 @@ class _GameBoardState extends State<GameBoard> {
     if (index == widget.items.dragItemIndex) {
       return InkWell(
         onTap: () {
-         setState(() {
-                    if (widget.gameEngine.isPaused) {
-                      if (!_isRandomized) {
-                        widget.items.randomizeItems();
-                        _isRandomized = true;
-                      }
-                      widget.gameEngine.play();
-                    } else {
-                      widget.gameEngine.pause();
-                    }
-                          tileItems = List.from(widget.items.items);
-                        isAnimating=false;
-                 
-                  });
+          setState(() {
+            if (widget.gameEngine.isPaused) {
+              if (!_isRandomized) {
+                widget.items.randomizeItems();
+                _isRandomized = true;
+              }
+              widget.gameEngine.play();
+            } else {
+              widget.gameEngine.pause();
+            }
+            tileItems = List.from(widget.items.items);
+            isAnimating = false;
+          });
         },
         child: Container(
           height: widget.tileHeight,
@@ -132,10 +125,7 @@ class _GameBoardState extends State<GameBoard> {
       showSelectedIndex: isDragged,
       gameItems: widget.gameItems,
       index: widget.index,
+      isPaused: widget.gameEngine.isPaused,
     );
   }
 }
-
-
-
-

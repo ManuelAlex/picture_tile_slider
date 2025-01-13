@@ -183,8 +183,12 @@ class _PictureTileSliderState extends State<PictureTileSlider> {
                                     isAnimating = true;
                                   });
 
-                                  _gameItemVariable!
-                                      .swapItem(!_gameEngine.isPaused, index);
+                                  _gameItemVariable!.swapItem(
+                                      !_gameEngine.isPaused, index, () {
+                                    if (!isDragged) {
+                                      _gameEngine.soundPlayer.play();
+                                    }
+                                  });
 
                                   Future.delayed(
                                       const Duration(milliseconds: 90), () {

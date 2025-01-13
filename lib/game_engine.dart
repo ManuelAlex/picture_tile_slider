@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:picture_tile_slider/sound_player.dart';
 
 class GameEngine {
   final ValueNotifier<Duration> _currentTimeNotifier =
@@ -8,6 +9,7 @@ class GameEngine {
   ValueNotifier<Duration> get currentTimeNotifier => _currentTimeNotifier;
 
   final Stopwatch _stopwatch = Stopwatch();
+  final SoundPlayer soundPlayer = SoundPlayer();
   Timer? _timer;
   // final String _currentTime = '0.00';
 
@@ -28,6 +30,7 @@ class GameEngine {
       final Duration elapsed = _stopwatch.elapsed;
       _currentTimeNotifier.value = elapsed;
     });
+    soundPlayer.isSoundEnabled = true;
   }
 
   // Stops the game and resets the timer
@@ -36,13 +39,14 @@ class GameEngine {
     _stopwatch.reset(); // Reset the stopwatch.
     _timer?.cancel();
     _currentTimeNotifier.value = Duration.zero; // Reset the displayed time.
+    soundPlayer.isSoundEnabled = false;
   }
 
   // Pauses the game
   void pause() {
     _pause = true;
     _stopwatch.stop();
-
+    soundPlayer.isSoundEnabled = false;
     _timer?.cancel();
   }
 }

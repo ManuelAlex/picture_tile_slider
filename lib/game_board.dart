@@ -74,7 +74,7 @@ class _GameBoardState extends State<GameBoard> {
       isAnimating = true; // Set animation flag to true
     });
 
-    widget.items.swapItem(!widget.gameEngine.isPaused, index);
+    widget.items.swapItem(!widget.gameEngine.isPaused, index, () {});
 
     // Trigger the state update after animation completes
     Future.delayed(const Duration(milliseconds: 90), () {

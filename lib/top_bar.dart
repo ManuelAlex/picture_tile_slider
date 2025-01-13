@@ -4,7 +4,7 @@ import 'package:picture_tile_slider/helpers.dart';
 
 import 'game_engine.dart';
 
-class TopBar extends StatelessWidget {
+class TopBar extends StatefulWidget {
   const TopBar({
     super.key,
     required GameEngine gameEngine,
@@ -20,8 +20,14 @@ class TopBar extends StatelessWidget {
   final GameItems gameItems;
 
   @override
+  State<TopBar> createState() => _TopBarState();
+}
+
+class _TopBarState extends State<TopBar> {
+  @override
   Widget build(BuildContext context) {
     String toDigitsTime(int t) => (t % 60).toString().padLeft(2, '0');
+    final Color color = Theme.of(context).scaffoldBackgroundColor;
     return Container(
       margin: const EdgeInsets.all(4),
       padding: const EdgeInsets.all(4),
@@ -31,22 +37,38 @@ class TopBar extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            tooltip: _gameEngine.isPaused ? 'Click to play' : 'Click to pause',
-            onPressed: onPlayOrPause,
+            tooltip: widget._gameEngine.isPaused
+                ? 'Click to play'
+                : 'Click to pause',
+            onPressed: widget.onPlayOrPause,
             icon: Icon(
-              _gameEngine.isPaused ? Icons.play_arrow : Icons.pause,
-              color: Theme.of(context).scaffoldBackgroundColor,
+              widget._gameEngine.isPaused ? Icons.play_arrow : Icons.pause,
+              color: color,
             ),
           ),
           const SizedBox(width: 4),
           PreviewMenuButton(
-            crossAxisCount: crossAxisCount,
-            mainAxisCount: mainAxisCount,
-            gameItems: gameItems,
+            crossAxisCount: widget.crossAxisCount,
+            mainAxisCount: widget.mainAxisCount,
+            gameItems: widget.gameItems,
+          ),
+          const SizedBox(width: 4),
+          IconButton(
+            onPressed: () {
+              setState(() {
+                widget._gameEngine.soundPlayer.toggleSound();
+              });
+            },
+            icon: Icon(
+              widget._gameEngine.soundPlayer.isSoundEnabled
+                  ? Icons.volume_up
+                  : Icons.volume_off,
+            ),
+            color: color,
           ),
           const Spacer(),
           ValueListenableBuilder<Duration>(
-            valueListenable: _gameEngine.currentTimeNotifier,
+            valueListenable: widget._gameEngine.currentTimeNotifier,
             builder: (context, currentDuration, child) {
               return MinutesAndSecondsText(
                 seconds: toDigitsTime(currentDuration.inSeconds),
@@ -77,46 +99,49 @@ class PreviewMenuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MenuAnchor(
-      menuChildren: <Widget>[
-        SizedBox(
-          width: 300,
-          height: 300,
-          child: GridView.count(
-            crossAxisCount: crossAxisCount,
-            children: List.generate(
-              crossAxisCount * mainAxisCount,
-              (int index) {
-                return Tile(
-                  size: 20,
-                  index: index,
-                  itemString: switch (gameItems) {
-                    GameItems.letter => alphabets[index],
-                    GameItems.number => '$index',
-                    _ => null,
-                  },
-                );
-              },
+    return Tooltip(
+      message: 'Click to view puzzle preview',
+      child: MenuAnchor(
+        menuChildren: <Widget>[
+          SizedBox(
+            width: 300,
+            height: 300,
+            child: GridView.count(
+              crossAxisCount: crossAxisCount,
+              children: List.generate(
+                crossAxisCount * mainAxisCount,
+                (int index) {
+                  return Tile(
+                    size: 20,
+                    index: index,
+                    itemString: switch (gameItems) {
+                      GameItems.letter => alphabets[index],
+                      GameItems.number => '$index',
+                      _ => null,
+                    },
+                  );
+                },
+              ),
             ),
           ),
-        ),
-      ],
-      builder:
-          (BuildContext context, MenuController controller, Widget? child) {
-        return IconButton(
-          onPressed: () {
-            if (controller.isOpen) {
-              controller.close();
-            } else {
-              controller.open();
-            }
-          },
-          icon: Icon(
-            Icons.preview,
-            color: Theme.of(context).scaffoldBackgroundColor,
-          ),
-        );
-      },
+        ],
+        builder:
+            (BuildContext context, MenuController controller, Widget? child) {
+          return IconButton(
+            onPressed: () {
+              if (controller.isOpen) {
+                controller.close();
+              } else {
+                controller.open();
+              }
+            },
+            icon: Icon(
+              Icons.preview,
+              color: Theme.of(context).scaffoldBackgroundColor,
+            ),
+          );
+        },
+      ),
     );
   }
 }

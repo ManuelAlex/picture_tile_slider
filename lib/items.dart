@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 class Items<T> {
   Items({
     this.crossAxisCount = 4,
@@ -35,7 +37,7 @@ class Items<T> {
   List<T> get items => List<T>.unmodifiable(_items);
 
   // Method to swap items
-  void swapItem(bool canSwap, int newIndex) {
+  void swapItem(bool canSwap, int newIndex, VoidCallback? onSwap) {
     if (canSwap) {
       assert(_dragItemIndex != -1, 'No item is currently being dragged.');
       assert(newIndex >= 0 && newIndex < _items.length,
@@ -55,6 +57,7 @@ class Items<T> {
         _items[dragItemIndex] = _items[newIndex];
         _items[newIndex] = draggedItem;
         dragItemIndex = newIndex;
+        onSwap?.call();
       }
     }
   }

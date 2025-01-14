@@ -53,18 +53,21 @@ class _TopBarState extends State<TopBar> {
             gameItems: widget.gameItems,
           ),
           const SizedBox(width: 4),
-          IconButton(
-            onPressed: () {
-              setState(() {
-                widget._gameEngine.soundPlayer.toggleSound();
-              });
-            },
-            icon: Icon(
-              widget._gameEngine.soundPlayer.isSoundEnabled
-                  ? Icons.volume_up
-                  : Icons.volume_off,
+          Tooltip(
+            message: 'Enable or disable sound',
+            child: IconButton(
+              onPressed: () {
+                setState(() {
+                  widget._gameEngine.soundPlayer.toggleSound();
+                });
+              },
+              icon: Icon(
+                widget._gameEngine.soundPlayer.isSoundEnabled
+                    ? Icons.volume_up
+                    : Icons.volume_off,
+              ),
+              color: color,
             ),
-            color: color,
           ),
           const Spacer(),
           ValueListenableBuilder<Duration>(

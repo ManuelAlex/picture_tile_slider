@@ -12,7 +12,7 @@ class SoundPlayer {
 
   Future<void> play() async {
     if (_isSoundEnabled) {
-      await _audioPlayer.play(AssetSource('sounds/whoosh-fire.wav'),
+      await _audioPlayer.play(AssetSource('sounds/whoosh_fire.wav'),
           position: const Duration(milliseconds: 20));
     }
   }
@@ -25,5 +25,14 @@ class SoundPlayer {
 
   void toggleSound() {
     isSoundEnabled = !isSoundEnabled;
+  }
+
+  Future<void> reset() async {
+    if (_isSoundEnabled) {
+      await _audioPlayer.play(
+        AssetSource('sounds/whoosh_reset.wav'),
+        position: const Duration(microseconds: 20),
+      );
+    }
   }
 }

@@ -3,11 +3,9 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:picture_tile_slider/floating_button.dart';
 
 import 'package:picture_tile_slider/game_engine.dart';
 import 'package:picture_tile_slider/game_frame.dart';
-import 'package:picture_tile_slider/game_menu.dart';
 
 import 'helpers.dart';
 
@@ -25,9 +23,6 @@ class PictureTileSlider extends StatefulWidget {
 }
 
 class _PictureTileSliderState extends State<PictureTileSlider> {
-  Offset _offset = const Offset(100, 100);
-  bool _showHiddenBox = false;
-
   late Items<dynamic>? _gameItemVariable;
   bool _isProcessing = true;
   GameItems _gameItem = GameItems.letter;
@@ -103,7 +98,6 @@ class _PictureTileSliderState extends State<PictureTileSlider> {
         screenWidth < screenHeight ? screenWidth : screenHeight;
 
     final double constrainedSize = maxSize.clamp(400.0, 1200.0);
-    const Color woodColor = Color(0xFFA0522D);
 
     if (_isProcessing || _gameItemVariable == null) {
       return const Scaffold(
@@ -128,7 +122,33 @@ class _PictureTileSliderState extends State<PictureTileSlider> {
               children: [
                 TopBar(
                   gameEngine: _gameEngine,
+                  items: _gameItemVariable!,
+                  imageByte: _imageBytes,
                   onPlayOrPause: _onDragTap,
+                  restart: () {
+                    _gameEngine.soundPlayer.reset();
+                    _initializeGrid();
+                  },
+                  onGridSelected: (int? gridNumber) {
+                    if (gridNumber != null) {
+                      _setter(() {
+                        _crossAxisCount = gridNumber;
+                        _mainAxisCount = gridNumber;
+                      });
+                    }
+                  },
+                  onGameItemSelected: (GameItems? gameItem) {
+                    if (gameItem != null) {
+                      _setter(() {
+                        _gameItem = gameItem;
+                      });
+                    }
+                  },
+                  onImageSelected: (Uint8List? newImage) {
+                    if (newImage != null) {
+                      _setter(() => _imageBytes = newImage);
+                    }
+                  },
                   gameItems: _gameItem,
                   crossAxisCount: _crossAxisCount,
                   mainAxisCount: _mainAxisCount,
@@ -222,61 +242,6 @@ class _PictureTileSliderState extends State<PictureTileSlider> {
                               ),
                             );
                           }).toList(),
-                        ),
-                      ),
-                      Visibility(
-                        visible: _showHiddenBox,
-                        child: AnimatedPositioned(
-                          duration: const Duration(milliseconds: 500),
-                          curve: Curves.decelerate,
-                          right: borderWidth,
-                          left: _showHiddenBox
-                              ? (isMobile
-                                  ? 0
-                                  : (size.width * 0.4) - borderWidth * 2)
-                              : size.width - borderWidth * 2,
-                          bottom: isMobile ? borderWidth : borderWidth,
-                          top: isMobile ? borderWidth : borderWidth,
-                          child: Container(
-                            margin: EdgeInsets.only(left: borderWidth),
-                            child: GameMenu(
-                              gameEngine: _gameEngine,
-                              intialImageData: _imageBytes,
-                              selectedItem: _gameItem,
-                              size: size,
-                              woodColor: woodColor,
-                              mainAxisCount: _mainAxisCount,
-                              crossAxisCount: _crossAxisCount,
-                              onCrossAxisSelected: (int newNumer) => _setter(
-                                () => _crossAxisCount = newNumer,
-                              ),
-                              onMainAxisSelected: (int newNumer) =>
-                                  _setter(() => _mainAxisCount = newNumer),
-                              onImagePicked: (Uint8List? newImageData) {
-                                if (newImageData != null) {
-                                  _setter(() => _imageBytes = newImageData);
-                                }
-                              },
-                              onGameItemSelected: (GameItems newItem) =>
-                                  _setter(() => _gameItem = newItem),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: _offset.dy,
-                        left: _offset.dx,
-                        child: FloatingButton(
-                          onTap: () {
-                            setState(() {
-                              _showHiddenBox = !_showHiddenBox;
-                            });
-                          },
-                          onDragEnd: (Offset details) {
-                            setState(() {
-                              _offset = details;
-                            });
-                          },
                         ),
                       ),
                     ],

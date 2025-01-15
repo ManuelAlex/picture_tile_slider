@@ -24,6 +24,13 @@ class Items<T> {
     );
   }
 
+  void restart({int? newCrossAxisCount, int? newMainAxisCount}) {
+    crossAxisCount = newCrossAxisCount ?? crossAxisCount;
+    mainAxisCount = newMainAxisCount ?? mainAxisCount;
+    // dragItemIndex = -1;
+    _initializeItems();
+  }
+
   int get lastItemIndex => (_items.length - 1);
   int _dragItemIndex = -1;
   int get dragItemIndex => _dragItemIndex;

@@ -1,4 +1,7 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'dart:async';
+import 'dart:math';
 
 import 'dart:typed_data';
 
@@ -87,93 +90,72 @@ class _PictureTileSliderState extends State<PictureTileSlider> {
 
   @override
   Widget build(BuildContext context) {
-    final Size size = MediaQuery.sizeOf(context);
-    final bool isMobile = size.width < 600;
-    double borderWidth = isMobile ? 40 : 80.0;
-
-    final double screenWidth = size.width;
-    final double screenHeight = size.height - 60;
-
-    final double maxSize =
-        screenWidth < screenHeight ? screenWidth : screenHeight;
-
-    final double constrainedSize = maxSize.clamp(400.0, 1200.0);
-
     if (_isProcessing || _gameItemVariable == null) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
         ),
       );
     }
-
-    final double cardWidth =
-        ((constrainedSize - borderWidth * 2) / _crossAxisCount);
-    final double borderTolerance = isMobile ? 20 : 0;
-    final double cardHeight =
-        (((constrainedSize - borderWidth * 2) / _mainAxisCount) -
-            borderTolerance);
-
+    var topBar = TopBar(
+      gameEngine: _gameEngine,
+      items: _gameItemVariable!,
+      imageByte: _imageBytes,
+      onPlayOrPause: _onDragTap,
+      restart: () {
+        _gameEngine.soundPlayer.reset();
+        _initializeGrid();
+      },
+      onGridSelected: _onGridSelected,
+      onGameItemSelected: _onGameItemSelected,
+      onImageSelected: _onImageSelected,
+      gameItems: _gameItem,
+      crossAxisCount: _crossAxisCount,
+      mainAxisCount: _mainAxisCount,
+    );
     return SafeArea(
       child: Scaffold(
+        appBar: topBar,
+        bottomNavigationBar: BottomBar(
+          onGameItemSelected: _onGameItemSelected,
+          onGridSelected: _onGridSelected,
+          onImageSelected: _onImageSelected,
+          gameItems: _gameItem,
+        ),
         body: Center(
           child: SingleChildScrollView(
             child: Column(
               children: [
-                TopBar(
-                  gameEngine: _gameEngine,
-                  items: _gameItemVariable!,
-                  imageByte: _imageBytes,
-                  onPlayOrPause: _onDragTap,
-                  restart: () {
-                    _gameEngine.soundPlayer.reset();
-                    _initializeGrid();
-                  },
-                  onGridSelected: (int? gridNumber) {
-                    if (gridNumber != null) {
-                      _setter(() {
-                        _crossAxisCount = gridNumber;
-                        _mainAxisCount = gridNumber;
-                      });
-                    }
-                  },
-                  onGameItemSelected: (GameItems? gameItem) {
-                    if (gameItem != null) {
-                      _setter(() {
-                        _gameItem = gameItem;
-                      });
-                    }
-                  },
-                  onImageSelected: (Uint8List? newImage) {
-                    if (newImage != null) {
-                      _setter(() => _imageBytes = newImage);
-                    }
-                  },
-                  gameItems: _gameItem,
-                  crossAxisCount: _crossAxisCount,
-                  mainAxisCount: _mainAxisCount,
-                ),
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: constrainedSize,
-                    maxHeight: constrainedSize,
-                    minWidth: 400,
-                    minHeight: 400,
-                  ),
-                  child: Stack(
-                    children: [
-                      GameFrame(
-                        child:
-                            //GameBoard loosing some states will debug later
-                            //GameBoard(items: _gameItemVariable!, gameEngine: _gameEngine, isRandomized: _isRandomized, gameItems: _gameItem, tileHeight: cardHeight, tileWidth: cardWidth),
+                LayoutBuilder(builder: (context, constraints) {
+                  final Size size = constraints.biggest;
+                  final bool isMobile = size.width < 600;
+                  final double borderWidth = isMobile ? 20 : 80.0;
 
-                            Stack(
+                  final double screenWidth = size.width;
+                  final double screenHeight = size.height;
+
+                  final double maxSize =
+                      screenWidth < screenHeight ? screenWidth : screenHeight;
+                  final double constrainedSize =
+                      maxSize.clamp(400.0, 1200.0) - (isMobile ? 40 : 200);
+
+                  final double cardSize =
+                      constrainedSize / max(_crossAxisCount, _mainAxisCount) -
+                          (borderWidth * 2) / _crossAxisCount;
+
+                  return Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: constrainedSize,
+                        maxHeight: constrainedSize,
+                      ),
+                      child: GameFrame(
+                        child: Stack(
                           children: _gameItemVariable!.items
                               .asMap()
                               .entries
                               .map((entry) {
                             final int index = entry.key;
-                            // print(index);
                             final dynamic currentItem = entry.value;
                             final bool isDragged =
                                 _gameItemVariable!.dragItemIndex != -1 &&
@@ -184,8 +166,7 @@ class _PictureTileSliderState extends State<PictureTileSlider> {
                                   index ~/ _gameItemVariable!.crossAxisCount;
                               final column =
                                   index % _gameItemVariable!.crossAxisCount;
-                              return Offset(
-                                  column * cardWidth, row * cardHeight);
+                              return Offset(column * cardSize, row * cardSize);
                             }
 
                             final Offset offset =
@@ -221,8 +202,8 @@ class _PictureTileSliderState extends State<PictureTileSlider> {
                                 },
                                 child: isDragged
                                     ? Container(
-                                        height: cardHeight,
-                                        width: cardWidth,
+                                        height: cardSize,
+                                        width: cardSize,
                                         color: Colors.transparent,
                                       )
                                     : GameTile(
@@ -233,8 +214,8 @@ class _PictureTileSliderState extends State<PictureTileSlider> {
                                         itemString: currentItem is String
                                             ? currentItem
                                             : null,
-                                        cardHeight: cardHeight,
-                                        cardWidth: cardWidth,
+                                        cardHeight: cardSize,
+                                        cardWidth: cardSize,
                                         showSelectedIndex: isDragged,
                                         gameItems: _gameItem,
                                         index: tileItems.indexOf(currentItem),
@@ -244,15 +225,38 @@ class _PictureTileSliderState extends State<PictureTileSlider> {
                           }).toList(),
                         ),
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                })
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  void _onImageSelected(Uint8List? newImage) {
+    if (newImage != null) {
+      _setter(() => _imageBytes = newImage);
+    }
+  }
+
+  void _onGridSelected(int? gridNumber) {
+    if (gridNumber != null) {
+      _setter(() {
+        _crossAxisCount = gridNumber;
+        _mainAxisCount = gridNumber;
+      });
+    }
+  }
+
+  void _onGameItemSelected(GameItems? gameItem) {
+    if (gameItem != null) {
+      _setter(() {
+        _gameItem = gameItem;
+      });
+    }
   }
 
   void _setter(VoidCallback fn) {

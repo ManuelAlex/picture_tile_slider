@@ -18,7 +18,7 @@ class GameFrame extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-            width: 40,
+            width: isMobile ? 20 : 40,
             color: woodColor,
           ),
           borderRadius: BorderRadius.circular(30),

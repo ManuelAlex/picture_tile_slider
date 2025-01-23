@@ -6,7 +6,7 @@ import 'package:picture_tile_slider/items.dart';
 
 import 'game_engine.dart';
 
-class TopBar extends StatefulWidget {
+class TopBar extends StatefulWidget implements PreferredSizeWidget {
   const TopBar({
     super.key,
     required GameEngine gameEngine,
@@ -34,6 +34,9 @@ class TopBar extends StatefulWidget {
 
   @override
   State<TopBar> createState() => _TopBarState();
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
 class _TopBarState extends State<TopBar> {
@@ -41,179 +44,106 @@ class _TopBarState extends State<TopBar> {
   Widget build(BuildContext context) {
     String toDigitsTime(int t) => (t % 60).toString().padLeft(2, '0');
     final Color color = Theme.of(context).scaffoldBackgroundColor;
-    return Container(
-        margin: const EdgeInsets.all(4),
-        padding: const EdgeInsets.all(4),
-        width: MediaQuery.sizeOf(context).width,
-        //height: 100,
-        decoration: const BoxDecoration(color: Colors.lightBlueAccent),
-        child: Row(
-          children: <Widget>[
-            Expanded(
-              flex: 2,
-              child: Wrap(
-                children: [
-                  IconButton(
-                    tooltip: widget._gameEngine.isPaused
-                        ? 'Click to play'
-                        : 'Click to pause',
-                    onPressed: widget.onPlayOrPause,
-                    icon: Icon(
-                      widget._gameEngine.isPaused
-                          ? Icons.play_arrow
-                          : Icons.pause,
-                      color: color,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  PreviewMenuButton(
-                    crossAxisCount: widget.crossAxisCount,
-                    mainAxisCount: widget.mainAxisCount,
-                    gameItems: widget.gameItems,
-                    imageByte: widget.imageByte,
-                  ),
-                  const SizedBox(width: 4),
-                  IconButton(
-                    tooltip: 'Enable or disable',
-                    onPressed: () {
-                      setState(() {
-                        widget._gameEngine.soundPlayer.toggleSound();
-                      });
-                    },
-                    icon: Icon(
-                      widget._gameEngine.soundPlayer.isSoundEnabled
-                          ? Icons.volume_up
-                          : Icons.volume_off,
-                    ),
-                    color: color,
-                  ),
-                  const SizedBox(width: 4),
-                  IconButton(
-                    tooltip: 'Restart',
-                    onPressed: widget.restart,
-                    icon: Icon(
-                      Icons.replay,
-                      color: color,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  SizedBox(
-                    width: 145,
-                    child: DropdownMenuTheme(
-                      data: DropdownMenuThemeData(
-                        textStyle: TextStyle(color: color),
-                      ),
-                      child: DropdownMenu(
-                        initialSelection: 3,
-                        leadingIcon: const Icon(Icons.grid_4x4),
-                        enableSearch: true,
-                        keyboardType: TextInputType.text,
-                        inputDecorationTheme: InputDecorationTheme(
-                          iconColor: color,
-                          prefixIconColor: color,
-                          suffixIconColor: color,
-                          enabledBorder: InputBorder.none,
-                          prefixStyle: const TextStyle(color: Colors.white),
-                          hintStyle: TextStyle(color: color),
-                          labelStyle: TextStyle(color: color),
-                        ),
-                        onSelected: widget.onGridSelected,
-                        dropdownMenuEntries: List.generate(8, (int index) {
-                          final int startIndex = index + 3;
-                          final String gridLabel = '$startIndex x $startIndex';
-                          return DropdownMenuEntry(
-                            value: startIndex,
-                            label: gridLabel,
-                          );
-                        }),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  SizedBox(
-                    width: 145,
-                    child: DropdownMenuTheme(
-                      data: DropdownMenuThemeData(
-                        textStyle: TextStyle(color: color),
-                      ),
-                      child: DropdownMenu<GameItems>(
-                        initialSelection: GameItems.letter,
-                        leadingIcon: Icon(switch (widget.gameItems) {
-                          GameItems.letter => Icons.abc_outlined,
-                          GameItems.number => Icons.numbers_outlined,
-                          GameItems.image => Icons.image,
-                        }),
-                        enableSearch: true,
-                        keyboardType: TextInputType.text,
-                        inputDecorationTheme: InputDecorationTheme(
-                          iconColor: color,
-                          prefixIconColor: color,
-                          suffixIconColor: color,
-                          enabledBorder: InputBorder.none,
-                          prefixStyle: const TextStyle(color: Colors.white),
-                          hintStyle: TextStyle(color: color),
-                          labelStyle: TextStyle(color: color),
-                        ),
-                        dropdownMenuEntries:
-                            GameItems.values.map((GameItems value) {
-                          return DropdownMenuEntry<GameItems>(
-                            value: value,
-                            label: value.name[0].toUpperCase() +
-                                value.name.substring(1),
-                          );
-                        }).toList(),
-                        onSelected: widget.onGameItemSelected,
-                      ),
-                    ),
-                  ),
-                  if (widget.gameItems == GameItems.image) ...[
-                    const SizedBox(width: 4),
-                    IconButton(
-                      onPressed: () async {
-                        final (Uint8List, String)? imageItem =
-                            await pickImageFromGallery();
-                        widget.onImageSelected(imageItem?.$1);
-                      },
-                      icon: Row(
-                        children: [
-                          Icon(
-                            Icons.upload_file,
-                            color: Theme.of(context).scaffoldBackgroundColor,
-                          ),
-                          Text(
-                            'Upload',
-                            style: TextStyle(
-                                color:
-                                    Theme.of(context).scaffoldBackgroundColor),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  ValueListenableBuilder<Duration>(
-                    valueListenable: widget._gameEngine.currentTimeNotifier,
-                    builder: (context, currentDuration, child) {
-                      return MinutesAndSecondsText(
-                        seconds: toDigitsTime(currentDuration.inSeconds),
-                        minutes: toDigitsTime(currentDuration.inMinutes),
-                        hour: currentDuration.inHours > 0
-                            ? currentDuration.inHours.toString()
-                            : '',
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ));
+    final bool isMobile = MediaQuery.sizeOf(context).width < 680;
+    return AppBar(
+      backgroundColor: woodColor,
+      actions: [
+        IconButton(
+          tooltip:
+              widget._gameEngine.isPaused ? 'Click to play' : 'Click to pause',
+          onPressed: widget.onPlayOrPause,
+          icon: Icon(
+            widget._gameEngine.isPaused ? Icons.play_arrow : Icons.pause,
+            color: color,
+          ),
+        ),
+        const SizedBox(width: 4),
+        PreviewMenuButton(
+          crossAxisCount: widget.crossAxisCount,
+          mainAxisCount: widget.mainAxisCount,
+          gameItems: widget.gameItems,
+          imageByte: widget.imageByte,
+        ),
+        const SizedBox(width: 4),
+        IconButton(
+          tooltip: 'Enable or disable',
+          onPressed: () {
+            setState(() {
+              widget._gameEngine.soundPlayer.toggleSound();
+            });
+          },
+          icon: Icon(
+            widget._gameEngine.soundPlayer.isSoundEnabled
+                ? Icons.volume_up
+                : Icons.volume_off,
+          ),
+          color: color,
+        ),
+        const SizedBox(width: 4),
+        IconButton(
+          tooltip: 'Restart',
+          onPressed: widget.restart,
+          icon: Icon(
+            Icons.replay,
+            color: color,
+          ),
+        ),
+        const SizedBox(width: 4),
+        if (!isMobile)
+          _MenuDropDown(
+            onGameItemSelected: widget.onGameItemSelected,
+            onGridSelected: widget.onGridSelected,
+            onImageSelected: widget.onImageSelected,
+            gameItems: widget.gameItems,
+          ),
+        const Spacer(),
+        ValueListenableBuilder<Duration>(
+          valueListenable: widget._gameEngine.currentTimeNotifier,
+          builder: (context, currentDuration, child) {
+            return MinutesAndSecondsText(
+              seconds: toDigitsTime(currentDuration.inSeconds),
+              minutes: toDigitsTime(currentDuration.inMinutes),
+              hour: currentDuration.inHours > 0
+                  ? currentDuration.inHours.toString()
+                  : '',
+            );
+          },
+        ),
+        const SizedBox(width: 8)
+      ],
+    );
+  }
+}
+
+class BottomBar extends StatelessWidget {
+  const BottomBar({
+    super.key,
+    required this.onGameItemSelected,
+    required this.onGridSelected,
+    required this.onImageSelected,
+    required this.gameItems,
+  });
+
+  final ValueChanged<int?> onGridSelected;
+  final ValueChanged<GameItems?> onGameItemSelected;
+  final ValueChanged<Uint8List?> onImageSelected;
+  final GameItems gameItems;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isMobile = MediaQuery.sizeOf(context).width < 680;
+    return isMobile
+        ? Container(
+            width: double.infinity,
+            height: 60,
+            color: woodColor,
+            child: _MenuDropDown(
+                onGameItemSelected: onGameItemSelected,
+                onGridSelected: onGridSelected,
+                onImageSelected: onImageSelected,
+                gameItems: gameItems),
+          )
+        : const SizedBox.shrink();
   }
 }
 
@@ -355,6 +285,125 @@ class MinutesAndSecondsText extends StatelessWidget {
         buildFixedSizedText(
           seconds[1],
         ),
+      ],
+    );
+  }
+}
+
+class _MenuDropDown extends StatefulWidget {
+  const _MenuDropDown({
+    required this.onGameItemSelected,
+    required this.onGridSelected,
+    required this.onImageSelected,
+    required this.gameItems,
+  });
+
+  final ValueChanged<int?> onGridSelected;
+  final ValueChanged<GameItems?> onGameItemSelected;
+  final ValueChanged<Uint8List?> onImageSelected;
+  final GameItems gameItems;
+
+  @override
+  State<_MenuDropDown> createState() => __MenuDropDownState();
+}
+
+class __MenuDropDownState extends State<_MenuDropDown> {
+  @override
+  Widget build(BuildContext context) {
+    final Color color = Theme.of(context).scaffoldBackgroundColor;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 145,
+          child: DropdownMenuTheme(
+            data: DropdownMenuThemeData(
+              textStyle: TextStyle(color: color),
+            ),
+            child: DropdownMenu(
+              initialSelection: 3,
+              leadingIcon: const Icon(Icons.grid_4x4),
+              enableSearch: true,
+              keyboardType: TextInputType.text,
+              inputDecorationTheme: InputDecorationTheme(
+                iconColor: color,
+                prefixIconColor: color,
+                suffixIconColor: color,
+                enabledBorder: InputBorder.none,
+                prefixStyle: const TextStyle(color: Colors.white),
+                hintStyle: TextStyle(color: color),
+                labelStyle: TextStyle(color: color),
+              ),
+              onSelected: widget.onGridSelected,
+              dropdownMenuEntries: List.generate(8, (int index) {
+                final int startIndex = index + 3;
+                final String gridLabel = '$startIndex x $startIndex';
+                return DropdownMenuEntry(
+                  value: startIndex,
+                  label: gridLabel,
+                );
+              }),
+            ),
+          ),
+        ),
+        const SizedBox(width: 4),
+        SizedBox(
+          width: 145,
+          child: DropdownMenuTheme(
+            data: DropdownMenuThemeData(
+              textStyle: TextStyle(color: color),
+            ),
+            child: DropdownMenu<GameItems>(
+              initialSelection: widget.gameItems,
+              leadingIcon: Icon(switch (widget.gameItems) {
+                GameItems.letter => Icons.abc_outlined,
+                GameItems.number => Icons.numbers_outlined,
+                GameItems.image => Icons.image,
+              }),
+              enableSearch: true,
+              keyboardType: TextInputType.text,
+              inputDecorationTheme: InputDecorationTheme(
+                iconColor: color,
+                prefixIconColor: color,
+                suffixIconColor: color,
+                enabledBorder: InputBorder.none,
+                prefixStyle: const TextStyle(color: Colors.white),
+                hintStyle: TextStyle(color: color),
+                labelStyle: TextStyle(color: color),
+              ),
+              dropdownMenuEntries: GameItems.values.map((GameItems value) {
+                return DropdownMenuEntry<GameItems>(
+                  value: value,
+                  label: value.name[0].toUpperCase() + value.name.substring(1),
+                );
+              }).toList(),
+              onSelected: widget.onGameItemSelected,
+            ),
+          ),
+        ),
+        if (widget.gameItems == GameItems.image) ...[
+          const SizedBox(width: 4),
+          IconButton(
+            onPressed: () async {
+              final (Uint8List, String)? imageItem =
+                  await pickImageFromGallery();
+              widget.onImageSelected(imageItem?.$1);
+            },
+            icon: Row(
+              children: [
+                Icon(
+                  Icons.upload_file,
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                ),
+                Text(
+                  'Upload',
+                  style: TextStyle(
+                      color: Theme.of(context).scaffoldBackgroundColor),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }

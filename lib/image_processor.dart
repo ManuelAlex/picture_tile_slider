@@ -1,28 +1,28 @@
- import 'dart:ui' as ui;
+import 'dart:ui' as ui;
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart'; 
-
+import 'package:flutter/material.dart';
+import 'package:picture_tile_slider/helpers.dart';
 
 class ImageProcessor {
   ImageProcessor({
     this.crossAxisCount = 4,
     this.mainAxisCount = 4,
-  
-    required this.assetPath, 
+    required this.assetPath,
     required this.context,
   });
 
   final int mainAxisCount;
   final int crossAxisCount;
- 
+
   final String assetPath;
   final BuildContext context;
 
   /// Load an image from assets and convert it into UI image format
   Future<ui.Image> loadUiImage(String assetPath) async {
     final ByteData data = await DefaultAssetBundle.of(context).load(assetPath);
-    final ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+    final ui.Codec codec = await ui.instantiateImageCodec(
+        enforceImageDimensions(data.buffer.asUint8List()));
     final ui.FrameInfo frameInfo = await codec.getNextFrame();
     return frameInfo.image;
   }
@@ -35,7 +35,7 @@ class ImageProcessor {
   }
 
   /// Process the image into grids
-  Future<List<Uint8List>> processImageIntoGrids(Uint8List? imageBytes ) async {
+  Future<List<Uint8List>> processImageIntoGrids(Uint8List? imageBytes) async {
     // Load the image: use `imageBytes` if available, otherwise use `assetPath`
     final ui.Image image = imageBytes != null
         ? await loadUiImageFromBytes(imageBytes)
@@ -57,7 +57,8 @@ class ImageProcessor {
         final paint = Paint();
         canvas.drawImageRect(
           image,
-          Rect.fromLTWH(left.toDouble(), top.toDouble(), gridWidth.toDouble(), gridHeight.toDouble()),
+          Rect.fromLTWH(left.toDouble(), top.toDouble(), gridWidth.toDouble(),
+              gridHeight.toDouble()),
           Rect.fromLTWH(0, 0, gridWidth.toDouble(), gridHeight.toDouble()),
           paint,
         );

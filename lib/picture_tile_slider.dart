@@ -104,6 +104,9 @@ class _PictureTileSliderState extends State<PictureTileSlider> {
       onPlayOrPause: _onDragTap,
       restart: () {
         _gameEngine.soundPlayer.reset();
+        setState(() {
+          _imageBytes = null;
+        });
         _initializeGrid();
       },
       onGridSelected: _onGridSelected,
@@ -120,6 +123,7 @@ class _PictureTileSliderState extends State<PictureTileSlider> {
           onGameItemSelected: _onGameItemSelected,
           onGridSelected: _onGridSelected,
           onImageSelected: _onImageSelected,
+          crossAxisCount: _crossAxisCount,
           gameItems: _gameItem,
         ),
         body: Center(

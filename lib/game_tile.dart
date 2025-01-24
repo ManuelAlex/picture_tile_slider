@@ -121,7 +121,12 @@ class Tile extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontFamily: '',
-                fontSize: size ?? (isMobile ? 30 : 50),
+                fontSize: size ??
+                    (isMobile
+                        ? itemString!.length > 1
+                            ? 20
+                            : 22
+                        : 50),
                 fontWeight: FontWeight.bold),
           ),
         ),

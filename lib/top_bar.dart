@@ -95,6 +95,7 @@ class _TopBarState extends State<TopBar> {
             onGridSelected: widget.onGridSelected,
             onImageSelected: widget.onImageSelected,
             gameItems: widget.gameItems,
+            crossAxisCount: widget.crossAxisCount,
           ),
         const Spacer(),
         ValueListenableBuilder<Duration>(
@@ -122,12 +123,14 @@ class BottomBar extends StatelessWidget {
     required this.onGridSelected,
     required this.onImageSelected,
     required this.gameItems,
+    required this.crossAxisCount,
   });
 
   final ValueChanged<int?> onGridSelected;
   final ValueChanged<GameItems?> onGameItemSelected;
   final ValueChanged<Uint8List?> onImageSelected;
   final GameItems gameItems;
+  final int crossAxisCount;
 
   @override
   Widget build(BuildContext context) {
@@ -138,10 +141,12 @@ class BottomBar extends StatelessWidget {
             height: 60,
             color: woodColor,
             child: _MenuDropDown(
-                onGameItemSelected: onGameItemSelected,
-                onGridSelected: onGridSelected,
-                onImageSelected: onImageSelected,
-                gameItems: gameItems),
+              onGameItemSelected: onGameItemSelected,
+              onGridSelected: onGridSelected,
+              onImageSelected: onImageSelected,
+              gameItems: gameItems,
+              crossAxisCount: crossAxisCount,
+            ),
           )
         : const SizedBox.shrink();
   }
@@ -296,12 +301,14 @@ class _MenuDropDown extends StatefulWidget {
     required this.onGridSelected,
     required this.onImageSelected,
     required this.gameItems,
+    required this.crossAxisCount,
   });
 
   final ValueChanged<int?> onGridSelected;
   final ValueChanged<GameItems?> onGameItemSelected;
   final ValueChanged<Uint8List?> onImageSelected;
   final GameItems gameItems;
+  final int crossAxisCount;
 
   @override
   State<_MenuDropDown> createState() => __MenuDropDownState();
@@ -311,78 +318,75 @@ class __MenuDropDownState extends State<_MenuDropDown> {
   @override
   Widget build(BuildContext context) {
     final Color color = Theme.of(context).scaffoldBackgroundColor;
+    final bool isMobile = MediaQuery.sizeOf(context).width < 680;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        SizedBox(
-          width: 145,
-          child: DropdownMenuTheme(
-            data: DropdownMenuThemeData(
-              textStyle: TextStyle(color: color),
+        DropdownMenuTheme(
+          data: DropdownMenuThemeData(
+            textStyle: TextStyle(color: color),
+          ),
+          child: DropdownMenu(
+            initialSelection: widget.crossAxisCount,
+            leadingIcon: const Icon(
+              Icons.grid_4x4,
+              size: 18,
             ),
-            child: DropdownMenu(
-              initialSelection: 3,
-              leadingIcon: const Icon(Icons.grid_4x4),
-              enableSearch: true,
-              keyboardType: TextInputType.text,
-              inputDecorationTheme: InputDecorationTheme(
-                iconColor: color,
-                prefixIconColor: color,
-                suffixIconColor: color,
-                enabledBorder: InputBorder.none,
-                prefixStyle: const TextStyle(color: Colors.white),
-                hintStyle: TextStyle(color: color),
-                labelStyle: TextStyle(color: color),
-              ),
-              onSelected: widget.onGridSelected,
-              dropdownMenuEntries: List.generate(8, (int index) {
-                final int startIndex = index + 3;
-                final String gridLabel = '$startIndex x $startIndex';
-                return DropdownMenuEntry(
-                  value: startIndex,
-                  label: gridLabel,
-                );
-              }),
+            enableSearch: true,
+            keyboardType: TextInputType.text,
+            inputDecorationTheme: InputDecorationTheme(
+              iconColor: color,
+              prefixIconColor: color,
+              suffixIconColor: color,
+              enabledBorder: InputBorder.none,
+              prefixStyle: const TextStyle(color: Colors.white),
+              hintStyle: TextStyle(color: color),
+              labelStyle: TextStyle(color: color),
             ),
+            onSelected: widget.onGridSelected,
+            dropdownMenuEntries: List.generate(8, (int index) {
+              final int startIndex = index + 3;
+              final String gridLabel = '$startIndex x $startIndex';
+              return DropdownMenuEntry(
+                value: startIndex,
+                label: gridLabel,
+              );
+            }),
           ),
         ),
         const SizedBox(width: 4),
-        SizedBox(
-          width: 145,
-          child: DropdownMenuTheme(
-            data: DropdownMenuThemeData(
-              textStyle: TextStyle(color: color),
+        DropdownMenuTheme(
+          data: DropdownMenuThemeData(
+            textStyle: TextStyle(color: color),
+          ),
+          child: DropdownMenu<GameItems>(
+            initialSelection: widget.gameItems,
+            leadingIcon: Icon(switch (widget.gameItems) {
+              GameItems.letter => Icons.abc_outlined,
+              GameItems.number => Icons.numbers_outlined,
+              GameItems.image => Icons.image,
+            }),
+            enableSearch: true,
+            keyboardType: TextInputType.text,
+            inputDecorationTheme: InputDecorationTheme(
+              iconColor: color,
+              prefixIconColor: color,
+              suffixIconColor: color,
+              enabledBorder: InputBorder.none,
+              prefixStyle: const TextStyle(color: Colors.white),
+              hintStyle: TextStyle(color: color),
+              labelStyle: TextStyle(color: color),
             ),
-            child: DropdownMenu<GameItems>(
-              initialSelection: widget.gameItems,
-              leadingIcon: Icon(switch (widget.gameItems) {
-                GameItems.letter => Icons.abc_outlined,
-                GameItems.number => Icons.numbers_outlined,
-                GameItems.image => Icons.image,
-              }),
-              enableSearch: true,
-              keyboardType: TextInputType.text,
-              inputDecorationTheme: InputDecorationTheme(
-                iconColor: color,
-                prefixIconColor: color,
-                suffixIconColor: color,
-                enabledBorder: InputBorder.none,
-                prefixStyle: const TextStyle(color: Colors.white),
-                hintStyle: TextStyle(color: color),
-                labelStyle: TextStyle(color: color),
-              ),
-              dropdownMenuEntries: GameItems.values.map((GameItems value) {
-                return DropdownMenuEntry<GameItems>(
-                  value: value,
-                  label: value.name[0].toUpperCase() + value.name.substring(1),
-                );
-              }).toList(),
-              onSelected: widget.onGameItemSelected,
-            ),
+            dropdownMenuEntries: GameItems.values.map((GameItems value) {
+              return DropdownMenuEntry<GameItems>(
+                value: value,
+                label: value.name[0].toUpperCase() + value.name.substring(1),
+              );
+            }).toList(),
+            onSelected: widget.onGameItemSelected,
           ),
         ),
         if (widget.gameItems == GameItems.image) ...[
-          const SizedBox(width: 4),
           IconButton(
             onPressed: () async {
               final (Uint8List, String)? imageItem =
@@ -395,11 +399,12 @@ class __MenuDropDownState extends State<_MenuDropDown> {
                   Icons.upload_file,
                   color: Theme.of(context).scaffoldBackgroundColor,
                 ),
-                Text(
-                  'Upload',
-                  style: TextStyle(
-                      color: Theme.of(context).scaffoldBackgroundColor),
-                ),
+                if (!isMobile)
+                  Text(
+                    'Upload',
+                    style: TextStyle(
+                        color: Theme.of(context).scaffoldBackgroundColor),
+                  ),
               ],
             ),
           ),

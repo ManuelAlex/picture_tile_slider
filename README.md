@@ -60,6 +60,15 @@ Contributions are welcome! Please follow these steps to contribute:
 - Flutter: For building the cross-platform application.
 - Dart: The programming language used for Flutter.
 
+## Screenshots
+
+Here are some screenshots of the application:
+
+### Letter Page
+![Letter](assets/images/slider_letter.png)
+
+### Number and Image Page
+![ Number and Image ](assets/images/num.png)
 
 ## 📜 License
 

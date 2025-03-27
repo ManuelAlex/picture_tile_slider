@@ -68,7 +68,7 @@ Here are some screenshots of the application:
 ![Letter](assets/images/slider_letter.png)
 
 ### Number and Image Page
-![ Number and Image ](assets/images/num.png)
+![ Number and Image ](assets/images/slider_num.png)
 
 ## 📜 License
 

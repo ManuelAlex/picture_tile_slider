@@ -1,6 +1,7 @@
 # picture_tile_slider
 
-A new Flutter project.
+This was inspired by a puzzled i played as a kid, it was built during the christmas break while i have seen a kid playing with a similar one.
+The aim is to build it as simple as possible, not over complicating things, with flutters in built state management. while leveraging flutter animation for smooth sliding.
 
 ## 🎮 Features
 

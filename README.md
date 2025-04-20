@@ -79,7 +79,7 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 For any inquiries or feedback, please reach out to:
 
-- Email: manuelzandr.t@gmail.com
+- Email: manuelzandra.t@gmail.com
 - GitHub: ManuelAlex(https://github.com/manuelAlex)
 
 ---
